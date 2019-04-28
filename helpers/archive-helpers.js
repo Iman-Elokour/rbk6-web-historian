@@ -1,4 +1,4 @@
-var http = require('http')
+var request = require('request');
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
@@ -69,13 +69,10 @@ exports.isUrlArchived = function(url, callback) {
 
 }
 exports.downloadUrls = function(urls) {
- 
-  _.each(urls function (url) {
-    var request = http.get( url , function(){
-     var file = fs.createWriteStream(exports.paths.archivedSites + "/" + url);
-     
-    })
-  })
+_.each(urls, function (url) {
+    //if (!url) { return; }
+    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+  });
   
 
 };
