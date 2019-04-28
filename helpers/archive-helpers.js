@@ -1,6 +1,8 @@
+var request = require('request');
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var archive = require('../helpers/archive-helpers');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -12,7 +14,10 @@ var _ = require('underscore');
 exports.paths = {
   siteAssets: path.join(__dirname, '../web/public'),
   archivedSites: path.join(__dirname, '../archives/sites'),
-  list: path.join(__dirname, '../archives/sites.txt')
+  list: path.join(__dirname, '../archives/sites.txt'),
+  index: path.join(__dirname, '../web/public/index.html')
+
+
 };
 
 // Used for stubbing paths for tests, do not modify
@@ -26,16 +31,54 @@ exports.initialize = function(pathsObj) {
 // modularize your code. Keep it clean!
 
 exports.readListOfUrls = function(callback) {
+  fs.readFile(exports.paths.list, (err, data) => {
+  if (err) throw err;
+  callback((data.toString()).split("\n"));
+});
+	
 };
 
 exports.isUrlInList = function(url, callback) {
+	exports.readListOfUrls(function(list){
+    var isFound = false;
+     _.each(list, function(element){
+    if(url === element){
+      isFound = !isFound;
+    }
+      
+  })
+     callback(isFound);
+  })
+	
 };
 
 exports.addUrlToList = function(url, callback) {
+fs.appendFile(exports.paths.list, url, function (err) {
+  if (err) throw err;
+  callback();
+});
+
 };
 
 exports.isUrlArchived = function(url, callback) {
+
+  fs.exists(exports.paths.archivedSites + "/" + url, function(exists) {
+    callback(exists);
+});
+
+
+}
+exports.downloadUrls = function(urls) {
+_.each(urls, function (url) {
+    //if (!url) { return; }
+    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + '/' + url));
+  });
+  
+
 };
 
-exports.downloadUrls = function(urls) {
-};
+
+
+
+
+
